@@ -1,19 +1,29 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace oop_TicTacToe
 {
     class TicTacToe
     {
-        public enum mark { Z = 0, X = 1, O = 2 }
+        public enum mark { Z , X , O }
         private mark[,] grid;
         private mark turn;
+        public int winCondition { get; private set; }
         public bool win { get; private set; }
 
-        public TicTacToe()
+        public TicTacToe(int gridSize = 3, int winRowSize = 3)
         {
-            grid = new mark[3, 3];
-            for (var i = 0; i < 3; i++)
-                for (var j = 0; j < 3; j++)
+            if (gridSize < 3 || gridSize > 15)
+                throw new ArgumentException("Grid size must be at least 3, and less than 16!");
+            if(winRowSize < 3 || winRowSize > gridSize)
+                throw new ArgumentException("Win row size must be at least 3, and less than grid size!");
+            winCondition = winRowSize;
+            grid = new mark[gridSize, gridSize];
+            for (var i = 0; i < gridSize; i++)
+                for (var j = 0; j < gridSize; j++)
                     grid[i, j] = mark.Z;
             turn = mark.X;
             win = false;
@@ -31,65 +41,96 @@ namespace oop_TicTacToe
         {
             if (!win)
             {
-                if (x > 3 || x < 1 || y > 3 || y < 1)
-                    throw new ArgumentException("Out of bounds! (x:[1,3] y:[1,3])");
+                if (x > grid.GetLength(0) || x < 1 || y > grid.GetLength(0) || y < 1)
+                    throw new ArgumentException("Out of bounds! (x:[1," + grid.GetLength(0) + "] y:[1," + grid.GetLength(0) + "])");
                 if (grid[x - 1, y - 1] != mark.Z)
                     throw new ArgumentException("Place already occupied!");
                 grid[x - 1, y - 1] = turn;
-                win = CheckForWin();
+                win = CheckForWin(turn);
                 if(!win)turn = (turn == mark.X) ? mark.O : mark.X;
             }
-            
-
         }
-        public bool CheckForWin()
+        public bool CheckForWin(mark who)
         {
-            mark checkMark = mark.Z;
-            for (var i = 0; i < 3; i++)
+            //check rows & cols
+            for (int i = 0, l = grid.GetLength(0); i < l; i++)
             {
-                if (grid[i, 0] == mark.Z)
-                    continue;
-                else
+                int rowCounter = 0, colCounter = 0;
+                for(int j = 0; j < l; j++)
                 {
-                    checkMark = grid[i, 0];
-                    if (checkMark == grid[i, 1] && checkMark == grid[i, 2])
-                    {
-                        return true;
-                    }
+                    if (grid[i, j] == who) rowCounter++;
+                    else rowCounter = 0;
+                    if (grid[j, i] == who) colCounter++;
+                    else colCounter = 0;
+                    if (rowCounter >= winCondition || colCounter >= winCondition) return true;
                 }
             }
-            for (var j = 0; j < 3; j++)
+            //diagonals 
+            for(int i, j, row = winCondition - 1, col = 0, l = grid.GetLength(0); //from bottom left corner
+                col <= l - winCondition;)
             {
-                if (grid[0, j] == mark.Z)
-                    continue;
-                else
+                i = row;
+                j = col;
+                int counter = 0;
+                while(i >= 0 && j < l)
                 {
-                    checkMark = grid[0, j];
-                    if (checkMark == grid[1, j] && checkMark == grid[2, j])
-                    {
-                        return true;
-                    }
+                    
+                    if (grid[i--, j++] == who) counter++;
+                    else counter = 0;
+                    if (counter >= winCondition) return true;
                 }
+                if (row < l - 1) row++;
+                else col++;
             }
-            if(grid[1,1] != mark.Z && ((grid[0,0] == grid[1,1] && grid[2,2] == grid[2,2]) || (grid[0,2] == grid[2,2] && grid[2,0] == grid[2, 2])))
+            for (int i, j, l = grid.GetLength(0), row = l - winCondition, col = 0; //from top left corner
+                col <= l - winCondition;)
             {
-                return true;
+                i = row;
+                j = col;
+                int counter = 0;
+                while(i < l && j < l)
+                {
+                    
+                    if (grid[i++, j++] == who) counter++;
+                    else counter = 0;
+                    if (counter >= winCondition) return true;
+                }
+                if (row > 0) row--;
+                else col++;
             }
             return false;
         }
-        public void printGrid()
+        public void PrintGrid()
         {
-            Console.Write("---------\n");
-            for (var i = 0; i < 3; i++)
-            {
-                Console.Write("| ");
-                for (var j = 0; j < 3; j++)
-                {
-                    Console.Write(grid[i, j] + " ");
-                }
-                Console.Write("|\n");
+            Console.Write("╔");
+            for (int i = 0; i < grid.GetLength(0)-1; i++){
+                Console.Write("═╦");
             }
-            Console.Write("---------\n");
+            Console.Write("═╗\n");
+            for (var i = 0; i < grid.GetLength(0); i++)
+            {
+                Console.Write("║");
+                for (var j = 0; j < grid.GetLength(0); j++)
+                {
+                    Console.Write(grid[i, j] + "║");
+                }
+                if(i < grid.GetLength(0) - 1)
+                {
+                    Console.Write("\n╠");
+                    for (var j = 0; j < grid.GetLength(0) - 1; j++)
+                    {
+                        Console.Write("═╬");
+                    }
+                    Console.Write("═╣");
+                }
+                Console.Write("\n");
+            }
+            Console.Write("╚");
+            for (int i = 0; i < grid.GetLength(0)-1; i++)
+            {
+                Console.Write("═╩");
+            }
+            Console.Write("═╝\n");
         }
     }
 }

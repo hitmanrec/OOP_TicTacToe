@@ -10,41 +10,38 @@ namespace oop_TicTacToe
     {
         static void Main(string[] args)
         {
-            TicTacToe game = new TicTacToe();
-            game.printGrid();
-            printNextTurn(game);
-            game.makeTurn(1, 1);
-
-            game.printGrid();
-            printNextTurn(game);
-            game.makeTurn(1, 2);
-
-            game.printGrid();
-            printNextTurn(game);
-            game.makeTurn(2, 1);
-
-            game.printGrid();
-            printNextTurn(game);
-            game.makeTurn(1, 3);
-
-            game.printGrid();
-            printNextTurn(game);
-            game.makeTurn(3, 1);
-
-            game.printGrid();
-            printNextTurn(game);
+            TicTacToe game = new TicTacToe(5,4);
+            while (!game.win)
+            {
+                game.PrintGrid();
+                PrintNextTurn(game);
+                AskForInput(game);
+            }
+            game.PrintGrid();
+            Console.WriteLine(game.WhosTurn() + " is winner!!!");
         }
 
-        static public void printNextTurn(TicTacToe game)
+        static public void PrintNextTurn(TicTacToe game)
         {
-            if (!game.win)
-            {
-                Console.WriteLine("Next turn: " + game.WhosTurn());
-            }
-            else
-            {
-                Console.WriteLine(game.WhosTurn() + " is winner!!!");
-            }
+            Console.WriteLine("Next turn: " + game.WhosTurn());
         }
+
+        static public void AskForInput(TicTacToe game)
+        {
+            int x = 0, y = 0;
+            while (true)
+            {
+                Console.WriteLine("Input x, y values in range [1," + game.GetGrid().GetLength(0) + "]");
+                string[] s = Console.ReadLine().Split(' ');
+                x = int.Parse(s[1]);
+                y = int.Parse(s[0]);
+                if (x > 0 && x <= game.GetGrid().GetLength(0) && y > 0 && y <= game.GetGrid().GetLength(0))
+                    if (game.GetGrid()[x - 1, y - 1] == TicTacToe.mark.Z)
+                        break;
+                Console.WriteLine("Wrong input!");
+            }
+            game.makeTurn(x, y);
+        }
+
     }
 }
